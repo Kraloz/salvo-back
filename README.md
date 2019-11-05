@@ -22,9 +22,10 @@ salvo-project/
  |----backend/
  |----frontend/
 ```
-In order to compile the frontend files into the backend server you will need to do:
+In order to compile the frontend files into the backend server run the script:
 
-- `cd frontend`
-- `npm run build`
-- `cd .. ; cd backend`
-- `./gradlew bootRun`
+`./deploy-front.sh`
+
+Then run.
+
+`./gradlew bootRun`
