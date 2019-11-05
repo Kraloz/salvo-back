@@ -40,6 +40,9 @@ public class GamePlayer {
     @OneToMany(mappedBy="gamePlayer", fetch=FetchType.EAGER, cascade = CascadeType.ALL)
     Set<Ship> ships = new HashSet<>();
     
+    @OneToMany(mappedBy="gamePlayer", fetch=FetchType.EAGER, cascade = CascadeType.ALL)
+    Set<Salvo> salvoes = new HashSet<>();    
+    
 	// constructors
 	public GamePlayer() {}
 	
@@ -91,6 +94,19 @@ public class GamePlayer {
 		ships.stream().forEach(ship -> this.addShip(ship));
 	}
 	
+	public Set<Salvo> getSalvoes() {
+		return salvoes;
+	}
+	
+    public void addSalvo(Salvo salvo) {
+        salvo.setGamePlayer(this);
+        this.salvoes.add(salvo);
+    }
+
+    public void addSalvoes(Set<Salvo> salvoes){
+        salvoes.stream().forEach(salvo -> this.addSalvo(salvo));
+    }
+	
 	// DTOs
     public Map<String, Object> gamePlayerDTO() {
         Map<String, Object> dto = new LinkedHashMap<>();
@@ -102,6 +118,11 @@ public class GamePlayer {
         dto.put("ships", this.getShips()
         		.stream()
         		.map(Ship::shipDTO));
+        dto.put("salvoes", this.game.getGamePlayers()
+    			.stream()
+    			.flatMap(gamePlayer -> gamePlayer.getSalvoes()
+    					.stream()
+    					.map(Salvo::salvoesDTO)));
         return dto;
     }
     

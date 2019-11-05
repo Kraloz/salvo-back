@@ -24,7 +24,8 @@ public class SalvoApplication {
 			PlayerRepository playerRepository,
 			GameRepository gameRepository,
 			GamePlayerRepository gamePlayerRepository,
-			ShipRepository shipRepository) {
+			ShipRepository shipRepository,
+			SalvoRepository salvoRepository) {
 		return (args) -> {
 			Player player1 = playerRepository.save(new Player("awa@nyc.gov", "awa"));
 			Player player2 = playerRepository.save(new Player("ewe@nyc.gov", "ewe"));
@@ -34,8 +35,6 @@ public class SalvoApplication {
 			
 			Game game1 = gameRepository.save(new Game());
 			Game game2 = gameRepository.save(new Game());
-			Game game3 = gameRepository.save(new Game());
-			Game game4 = gameRepository.save(new Game());			
 			
 			GamePlayer gp1 = gamePlayerRepository.save(new GamePlayer(game1, player1));
 			GamePlayer gp2 = gamePlayerRepository.save(new GamePlayer(game1, player2));
@@ -53,6 +52,10 @@ public class SalvoApplication {
 			Ship ship8 = shipRepository.save(new Ship(gp3, ShipType.BATTLESHIP, List.of("I1","I2","I3","I4")));
 			Ship ship9 = shipRepository.save(new Ship(gp3, ShipType.SUBMARINE, List.of("J1","J2","J3")));
 			
+			Salvo salvo1 = salvoRepository.save(new Salvo(gp1, List.of("A1","E3","A4")));
+			Salvo salvo2 = salvoRepository.save(new Salvo(gp2, List.of("F4","C2","G7")));
+			Salvo salvo3 = salvoRepository.save(new Salvo(gp3, List.of("A1","E3","A4")));
+			Salvo salvo4 = salvoRepository.save(new Salvo(gp3, List.of("F4","C2","G7")));
 		};
 	}
 }
