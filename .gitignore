@@ -2,7 +2,7 @@ HELP.md
 .gradle
 build/
 bin/
-src/main/resources/static/
+src/main/resources/static/**
 
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**
@@ -33,3 +33,4 @@ out/
 
 ### VS Code ###
 .vscode/
+src/main/resources/static/web/css/app.c5dbf710.css
