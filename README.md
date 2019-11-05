@@ -24,8 +24,12 @@ salvo-project/
 ```
 In order to compile the frontend files into the backend server run the script:
 
-`./deploy-front.sh`
+`sudo chmod +x deploy-front.sh` - Makes the script executable
 
-Then run.
+`./deploy-front.sh` - Run the script
+
+**Windows users:** you will need _git bash_ or _cygwin_ in order to run the scripts
+
+## Run server
 
 `./gradlew bootRun`
