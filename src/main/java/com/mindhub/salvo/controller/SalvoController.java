@@ -1,6 +1,8 @@
 package com.mindhub.salvo.controller;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.mindhub.salvo.model.Game;
 import com.mindhub.salvo.model.GamePlayer;
 import com.mindhub.salvo.model.Player;
 import com.mindhub.salvo.repository.GamePlayerRepository;
@@ -36,7 +39,7 @@ public class SalvoController {
 	
 	@CrossOrigin(origins = "*")
 	@RequestMapping("/game_view")
-	public List<Map<String, Object>> getGamePlayers() {
+	public List<Map<String, Object>> getGameViews() {
 		List<GamePlayer> gamePlayers = gamePlayerRepository.findAll();
 		List<Map<String, Object>> response =
 				gamePlayers.stream()
@@ -48,11 +51,22 @@ public class SalvoController {
 	
 	@CrossOrigin(origins = "*")
 	@RequestMapping("/game_view/{gamePlayerId}")
-	public ResponseEntity<Map<String, Object>> getGamePlayers(@PathVariable Long gamePlayerId) {
+	public ResponseEntity<Map<String, Object>> getViewsByPlayerId(@PathVariable Long gamePlayerId) {
 		Optional<GamePlayer> gamePlayer = gamePlayerRepository.findById(gamePlayerId);
 		
         return new ResponseEntity<>(gamePlayer.get().gamePlayerDTO(), HttpStatus.OK);
     }
+
+	@CrossOrigin(origins = "*")
+	@RequestMapping("/games")
+	 public Map<String, Object> getGames() {
+        Map<String, Object> dto = new LinkedHashMap<>();
+        dto.put("games", gameRepository.findAll()
+        		.stream()
+        		.map(Game::gameDTO)
+        		.collect(Collectors.toList()));
+        return dto;
+	}
 	
 	@CrossOrigin(origins = "*")
 	@RequestMapping("/players")
@@ -87,6 +101,19 @@ public class SalvoController {
 				.map(GamePlayer::gamePlayerDTO)
 				.collect(Collectors.toSet());
 
+		return response;
+	}
+	
+	// @returns *unordered* leaderboard
+	@CrossOrigin(origins = "*")
+	@RequestMapping("/leaderboard")
+	public List<Map<String,Object>> getLeaderBoard() {
+		List<Player> players = playerRepository.findAll();
+		List<Map<String, Object>> response =
+				players.stream()
+				.map(Player::scoresDTO)
+				.collect(Collectors.toList());
+		
 		return response;
 	}
 }

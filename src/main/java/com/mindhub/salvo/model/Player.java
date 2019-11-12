@@ -2,6 +2,7 @@ package com.mindhub.salvo.model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -31,6 +32,10 @@ public class Player {
     @OneToMany(mappedBy="player", fetch=FetchType.EAGER,cascade = CascadeType.ALL)
     Set<GamePlayer> gamePlayers;
 
+    @OneToMany(mappedBy="player", fetch=FetchType.EAGER,cascade = CascadeType.ALL)
+    Set<Score> scores;
+
+    
     // constructors
     public Player() { }
 
@@ -74,12 +79,66 @@ public class Player {
         gamePlayers.add(gamePlayer);
     }
     
-    public Map<String, Object> playerDTO() {
+    
+    public Set<Score> getScores() {
+        return scores;
+    }
+
+    public void setScores(Set<Score> scores) {
+        this.scores = scores;
+    }
+    
+    public void addScore (Score score) {
+        score.setPlayer(this);
+        scores.add(score);
+    }
+    
+    public Score getGameScore (Game game) {
+    	return scores.stream()
+			.filter(score -> score.getGame().getId() == game.getId())
+			.findAny()
+			.orElse(null);
+	}
+    
+    public double getScoresSum() {
+    	double total = this.getScores()
+        		.stream()
+        		.mapToDouble(Score::getScore)
+        		.sum();
+    	
+    	return total;
+    }
+    
+    public Map<String, 	Object> playerDTO() {
 		Map<String, Object> dto = new LinkedHashMap<String, Object>();
 		dto.put("id", this.getId());
 		dto.put("email", this.getEmail());
 		dto.put("nickName", this.getNickName());
-    	
+        
+    	dto.put("points", this.getScoresSum());
+    	return dto;
+    }
+    
+    public Map<String, Object> scoresDTO() {
+    	// calc W/L/D
+    	int wins = 0, losses = 0, draws = 0;
+        for (GamePlayer gp : this.getGamePlayers()) {
+        	Score sc = this.getGameScore(gp.getGame());
+        	if (sc != null) {
+	        	float score = gp.getScore().getScore();
+	        	wins  +=  (score == 1)   ? 1 : 0;
+	        	losses +=  (score == 0)   ? 1 : 0; 
+	        	draws  += (score == 0.5)  ? 1 : 0;
+        	}
+        }
+        // populate dto
+        Map<String, Object> dto = new LinkedHashMap<String, Object>();
+    	dto.put("nickName", this.getNickName());
+    	dto.put("total", this.getScoresSum());
+        dto.put("wins", wins);
+        dto.put("draws", draws);
+        dto.put("losses", losses);
+
     	return dto;
     }
 }

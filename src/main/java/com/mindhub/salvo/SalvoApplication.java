@@ -1,5 +1,6 @@
 package com.mindhub.salvo;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
@@ -25,7 +26,8 @@ public class SalvoApplication {
 			GameRepository gameRepository,
 			GamePlayerRepository gamePlayerRepository,
 			ShipRepository shipRepository,
-			SalvoRepository salvoRepository) {
+			SalvoRepository salvoRepository,
+			ScoreRepository scoreRepository) {
 		return (args) -> {
 			Player player1 = playerRepository.save(new Player("awa@nyc.gov", "awa"));
 			Player player2 = playerRepository.save(new Player("ewe@nyc.gov", "ewe"));
@@ -56,6 +58,9 @@ public class SalvoApplication {
 			Salvo salvo2 = salvoRepository.save(new Salvo(gp2, List.of("F4","C2","G7")));
 			Salvo salvo3 = salvoRepository.save(new Salvo(gp3, List.of("A1","E3","A4")));
 			Salvo salvo4 = salvoRepository.save(new Salvo(gp3, List.of("F4","C2","G7")));
+			
+			Score score1 = scoreRepository.save(new Score(player1, game1, 1, LocalDateTime.now()));
+			Score score2 = scoreRepository.save(new Score(player2, game1, 0, LocalDateTime.now()));
 		};
 	}
 }

@@ -20,7 +20,7 @@ import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 public class GamePlayer {
-	
+		
 	// attributes
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
@@ -106,6 +106,10 @@ public class GamePlayer {
     public void addSalvoes(Set<Salvo> salvoes){
         salvoes.stream().forEach(salvo -> this.addSalvo(salvo));
     }
+    
+    public Score getScore () {
+		return this.player.getGameScore(this.game);
+    }
 	
 	// DTOs
     public Map<String, Object> gamePlayerDTO() {
@@ -123,6 +127,12 @@ public class GamePlayer {
     			.flatMap(gamePlayer -> gamePlayer.getSalvoes()
     					.stream()
     					.map(Salvo::salvoesDTO)));
+     
+        // seguramente esto esté mal o sobre
+        if (this.getScore() != null)
+            dto.put("score", this.getScore().getScore());
+        else
+            dto.put("score", this.getScore());
         return dto;
     }
     
@@ -130,7 +140,12 @@ public class GamePlayer {
         Map<String, Object> dto = new LinkedHashMap<>();
         dto.put("id", this.getId());
         dto.put("player", this.player.playerDTO());
-
+        Score score = this.player.getGameScore(this.game);
+        if (score != null)
+            dto.put("score", score.getScore());
+        else
+            dto.put("score", null);
+        
         return dto;
     }
 }

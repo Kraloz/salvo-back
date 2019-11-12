@@ -25,17 +25,18 @@ public class Game {
 	private long id;
 	
     private LocalDateTime created;
-  
 
     @OneToMany(mappedBy="game", fetch=FetchType.EAGER,cascade = CascadeType.ALL)
     Set<GamePlayer> gamePlayers;
+    
+    @OneToMany(mappedBy="game", fetch=FetchType.EAGER,cascade = CascadeType.ALL)
+    Set<Score> scores;
     
     // constructors
     public Game() {
     	this.created = LocalDateTime.now();
     }
     
-
     // getters & setters
     public long getId() {
 		return this.id;
@@ -62,10 +63,28 @@ public class Game {
         gamePlayers.add(gamePlayer);
     }
     
+
+    public Set<Score> getScores() {
+        return scores;
+    }
+
+    public void setScores(Set<Score> scores) {
+        this.scores = scores;
+    }
+
+    public void addScore (Score score) {
+        score.setGame(this);
+        scores.add(score);
+    }
+    
+    // behavior
     public Map<String, Object> gameDTO() {
 	  Map<String, Object> dto = new LinkedHashMap<String, Object>();
 	  dto.put("id", this.getId());
 	  dto.put("created", this.getCreated());
+	  dto.put("gamePlayers", this.getGamePlayers()
+			  .stream()
+			  .map(GamePlayer::gamesPlayersDTO));
 	  
 	  return dto;
 	}
