@@ -6,11 +6,10 @@ if [ ! -d "./node_modules" ]
 then
     npm install
 else
-    echo "OK - node_odules exist"
+    echo "OK - node_modules exist"
 fi
 
 npm run build
-cd .. ; cd backend
 echo "frontend compiled, now you can run : ./gradlew bootRun"
 echo -e "\n"
 echo "LISTO EL POLLOOO"

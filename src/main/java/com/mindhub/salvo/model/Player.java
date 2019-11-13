@@ -25,6 +25,7 @@ public class Player {
 	@GenericGenerator(name = "native", strategy = "native")
     private long id;
 	private String email;
+	private String password;
 	
     @Column(name="nickName", unique=true)
     private String nickName;
@@ -63,6 +64,14 @@ public class Player {
     
     public void setEmail(String email) {
     	this.email = email;
+    }
+    
+    public String getPassword() {
+    	return this.password;
+    }
+    
+    public void setPassword(String password) {
+    	this.password = password;
     }
     
 
