@@ -2,7 +2,6 @@ package com.mindhub.salvo.model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -40,9 +39,10 @@ public class Player {
     // constructors
     public Player() { }
 
-    public Player(String email, String nickName) {
+    public Player(String email, String nickName, String password) {
     	this.email = email;
         this.nickName = nickName;
+        this.password = password;
     }
 
     // getters & setters
