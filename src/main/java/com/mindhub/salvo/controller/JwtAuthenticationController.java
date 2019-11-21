@@ -1,6 +1,7 @@
 package com.mindhub.salvo.controller;
 
-import java.util.Objects;import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Objects;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,6 +17,7 @@ import com.mindhub.salvo.service.JwtUserDetailsService;
 import com.mindhub.salvo.config.JwtTokenUtil;
 import com.mindhub.salvo.model.JwtRequest;
 import com.mindhub.salvo.model.JwtResponse;
+import com.mindhub.salvo.model.Player;
 
 @RestController
 @CrossOrigin
@@ -43,4 +45,11 @@ public class JwtAuthenticationController {
 			throw new Exception("INVALID_CREDENTIALS", e);
 		}
 	}
+
+	@RequestMapping(value = "/register", method = RequestMethod.POST)
+		public ResponseEntity<?> saveUser(@RequestBody Player player) throws Exception {
+		return ResponseEntity.ok(userDetailsService.save(player));
+	}
+
+
 }

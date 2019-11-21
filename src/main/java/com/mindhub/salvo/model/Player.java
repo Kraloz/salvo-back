@@ -110,6 +110,9 @@ public class Player {
 	}
     
     public double getScoresSum() {
+        if (this.getScores() == null )
+        	return 0;
+        
     	double total = this.getScores()
         		.stream()
         		.mapToDouble(Score::getScore)
