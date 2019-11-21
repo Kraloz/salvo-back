@@ -48,13 +48,13 @@ public class SalvoApplication {
 			ScoreRepository scoreRepository) 
 	{
 		return (args) -> {
-			Player player1 = playerRepository.save(new Player("awa@nyc.gov", "awa", passwordEncoder().encode("123")));
-			Player player2 = playerRepository.save(new Player("ewe@nyc.gov", "ewe", passwordEncoder().encode("123")));
-			Player player3 = playerRepository.save(new Player("iwi@nyc.gov", "iwi", passwordEncoder().encode("123")));
-			Player player4 = playerRepository.save(new Player("owo@nyc.gov", "owo", passwordEncoder().encode("123")));
-			Player player6 = playerRepository.save(new Player("uwu@nyc.gov", "uwu", passwordEncoder().encode("123")));
+			Player player1 = playerRepository.save(new Player("awa@nyc.gov", "awa", "123"));
+			Player player2 = playerRepository.save(new Player("ewe@nyc.gov", "ewe", "123"));
+			Player player3 = playerRepository.save(new Player("iwi@nyc.gov", "iwi", "123"));
+			Player player4 = playerRepository.save(new Player("owo@nyc.gov", "owo", "123"));
+			Player player6 = playerRepository.save(new Player("uwu@nyc.gov", "uwu", "123"));
 			
-			Player admin = playerRepository.save(new Player("adm@adm.com", "admin", passwordEncoder().encode("admin")));
+			Player admin = playerRepository.save(new Player("adm@adm.com", "admin", "admin"));
 			
 			Game game1 = gameRepository.save(new Game());
 			Game game2 = gameRepository.save(new Game());
@@ -84,89 +84,4 @@ public class SalvoApplication {
 			Score score2 = scoreRepository.save(new Score(player2, game1, 0, LocalDateTime.now()));
 		};
 	}
-	
-	@Bean
-    public PasswordEncoder passwordEncoder() {
-		return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-	}
-}
-
-@Configuration
-class WebSecurityConfiguration extends GlobalAuthenticationConfigurerAdapter {
-
-    @Autowired
-    PlayerRepository playerRepository;
-
-    @Autowired
-    PasswordEncoder passwordEncoder;
-
-    @Override
-    public void init(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(inputName -> {
-            Player player = playerRepository.findByNickName(inputName);
-            if (player != null) {
-                if(player.getNickName().equals("admin")){
-                    System.out.println("RESPONSE -> Loged and getting data");
-                    return new User(player.getNickName(), player.getPassword(),
-                            AuthorityUtils.createAuthorityList("ADMIN"));
-                }else {
-                    System.out.println("RESPONSE -> Loged and getting data");
-                    return new User(player.getNickName(), player.getPassword(),
-                            AuthorityUtils.createAuthorityList("USER"));
-                }
-            } else {
-                throw new UsernameNotFoundException("RESPONSE -> Usuario desconocido : " + inputName);
-            }
-        }).passwordEncoder(passwordEncoder);
-    }
-}
-
-
-@EnableWebSecurity
-@Configuration
-class WebSecurityRoutes extends WebSecurityConfigurerAdapter {
-
-	  @Override
-	    protected void configure(HttpSecurity http) throws Exception {
-
-	        http
-	            .authorizeRequests()
-	                .antMatchers("/api/games", "/api/players", "/api/leaderboard").permitAll()
-	                .antMatchers("/rest/**").hasAuthority("ADMIN")
-	                .antMatchers("/api/**").hasAnyAuthority("ADMIN", "USER")
-	                .antMatchers("/web/game.html").hasAnyAuthority("ADMIN", "USER")
-	                .and()
-	            .formLogin()
-	                .usernameParameter("name")
-	                .passwordParameter("pwd")
-	                .loginPage("/api/login")
-	                .permitAll()
-	                .and()
-	            .logout()
-	                .permitAll();
-
-	        http.logout().logoutUrl("/api/logout");
-
-	        // turn off checking for CSRF tokens
-	        http.csrf().disable();
-
-	        // if user is not authenticated, just send an authentication failure response
-	        http.exceptionHandling().authenticationEntryPoint((req, res, exc) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED));
-
-	        // if login is successful, just clear the flags asking for authentication
-	        http.formLogin().successHandler((req, res, auth) -> clearAuthenticationAttributes(req));
-
-	        // if login fails, just send an authentication failure response
-	        http.formLogin().failureHandler((req, res, exc) -> res.sendError(HttpServletResponse.SC_UNAUTHORIZED));
-
-	        // if logout is successful, just send a success response
-	        http.logout().logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler());
-	    }
-
-	    private void clearAuthenticationAttributes(HttpServletRequest request) {
-	        HttpSession session = request.getSession(false);
-	        if (session != null) {
-	            session.removeAttribute(WebAttributes.AUTHENTICATION_EXCEPTION);
-	        }
-	    }
 }
