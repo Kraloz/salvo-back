@@ -1,5 +1,6 @@
 package com.mindhub.salvo.model;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -13,7 +14,9 @@ import javax.persistence.GenerationType;
 import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.validation.constraints.NotBlank;
 
 @Entity
 public class Player {
@@ -23,11 +26,20 @@ public class Player {
 	@GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
 	@GenericGenerator(name = "native", strategy = "native")
     private long id;
-	private String email;
-	private String password;
 	
+	@NotBlank
     @Column(name="nickName", unique=true)
     private String nickName;
+	@NotBlank
+	private String email;
+	@NotBlank
+	private String password;
+	
+	@ManyToMany(fetch = FetchType.LAZY)
+//	@JoinTable(	name = "user_roles", 
+//				joinColumns = @JoinColumn(name = "user_id"), 
+//				inverseJoinColumns = @JoinColumn(name = "role_id"))
+	private Set<Role> roles = new HashSet<>();
     
     @OneToMany(mappedBy="player", fetch=FetchType.EAGER,cascade = CascadeType.ALL)
     Set<GamePlayer> gamePlayers;
@@ -35,9 +47,8 @@ public class Player {
     @OneToMany(mappedBy="player", fetch=FetchType.EAGER,cascade = CascadeType.ALL)
     Set<Score> scores;
 
-    
     // constructors
-    public Player() { }
+    public Player() {}
 
     public Player(String email, String nickName, String password) {
     	this.email = email;
@@ -73,8 +84,19 @@ public class Player {
     public void setPassword(String password) {
     	this.password = password;
     }
-    
 
+	public Set<Role>getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<Role> roles) {
+		this.roles = roles;
+	}
+	
+	public void addRole(Role role) {
+		this.roles.add(role);
+	}
+    
     public Set<GamePlayer> getGamePlayers() {
         return gamePlayers;
     }
@@ -87,7 +109,6 @@ public class Player {
         gamePlayer.setPlayer(this);
         gamePlayers.add(gamePlayer);
     }
-    
     
     public Set<Score> getScores() {
         return scores;
@@ -110,6 +131,9 @@ public class Player {
 	}
     
     public double getScoresSum() {
+        if (this.getScores() == null )
+        	return 0;
+        
     	double total = this.getScores()
         		.stream()
         		.mapToDouble(Score::getScore)
