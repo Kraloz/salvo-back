@@ -3,29 +3,11 @@ package com.mindhub.salvo;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.authentication.configuration.GlobalAuthenticationConfigurerAdapter;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.WebAttributes;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-
 import com.mindhub.salvo.model.*;
 import com.mindhub.salvo.model.Ship.ShipType;
 import com.mindhub.salvo.repository.*;
@@ -40,21 +22,27 @@ public class SalvoApplication {
 	@SuppressWarnings("unused")
 	@Bean
 	public CommandLineRunner initData(
+			RoleRepository roleRepository,
 			PlayerRepository playerRepository,
 			GameRepository gameRepository,
 			GamePlayerRepository gamePlayerRepository,
 			ShipRepository shipRepository,
 			SalvoRepository salvoRepository,
-			ScoreRepository scoreRepository) 
+			ScoreRepository scoreRepository,
+			PasswordEncoder encoder)
 	{
 		return (args) -> {
-			Player player1 = playerRepository.save(new Player("awa@nyc.gov", "awa", "123"));
-			Player player2 = playerRepository.save(new Player("ewe@nyc.gov", "ewe", "123"));
-			Player player3 = playerRepository.save(new Player("iwi@nyc.gov", "iwi", "123"));
-			Player player4 = playerRepository.save(new Player("owo@nyc.gov", "owo", "123"));
-			Player player6 = playerRepository.save(new Player("uwu@nyc.gov", "uwu", "123"));
+			Role user = roleRepository.save(new Role(RoleType.ROLE_USER));
+			Role moderator = roleRepository.save(new Role(RoleType.ROLE_MODERATOR));
+			Role admin = roleRepository.save(new Role(RoleType.ROLE_ADMIN));
 			
-			Player admin = playerRepository.save(new Player("adm@adm.com", "admin", "admin"));
+			Player player1 = playerRepository.save(new Player("awa@nyc.gov", "awa", encoder.encode("123456")));
+			Player player2 = playerRepository.save(new Player("ewe@nyc.gov", "ewe", encoder.encode("123456")));
+			Player player3 = playerRepository.save(new Player("iwi@nyc.gov", "iwi", encoder.encode("123456")));
+			Player player4 = playerRepository.save(new Player("owo@nyc.gov", "owo", encoder.encode("123456")));
+			Player player6 = playerRepository.save(new Player("uwu@nyc.gov", "uwu", encoder.encode("123456")));
+			
+			Player admin_acc = playerRepository.save(new Player("adm@adm.com", "admin", encoder.encode("admin")));
 			
 			Game game1 = gameRepository.save(new Game());
 			Game game2 = gameRepository.save(new Game());

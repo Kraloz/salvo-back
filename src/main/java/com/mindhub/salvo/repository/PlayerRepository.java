@@ -5,9 +5,11 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import com.mindhub.salvo.model.Player;
 
-
 @RepositoryRestResource
 public interface PlayerRepository extends JpaRepository<Player, Long> {
 	Player findByNickName(String nickName);
 	Player findByEmail(String email);
+
+	Boolean existsByNickName(String nickName);
+	Boolean existsByEmail(String email);
 }
