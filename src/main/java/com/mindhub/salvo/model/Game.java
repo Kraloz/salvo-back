@@ -77,6 +77,13 @@ public class Game {
         scores.add(score);
     }
     
+    private boolean isFull() {
+    	if(this.getGamePlayers().size()<2) 
+    		return false;
+    	else
+    		return true;
+    }
+    
     // behavior
     public Map<String, Object> gameDTO() {
 	  Map<String, Object> dto = new LinkedHashMap<String, Object>();
@@ -85,6 +92,7 @@ public class Game {
 	  dto.put("gamePlayers", this.getGamePlayers()
 			  .stream()
 			  .map(GamePlayer::gamesPlayersDTO));
+	  dto.put("full", this.isFull());
 	  
 	  return dto;
 	}

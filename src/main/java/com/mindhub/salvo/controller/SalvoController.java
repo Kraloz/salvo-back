@@ -11,9 +11,13 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mindhub.salvo.model.Game;
@@ -57,13 +61,12 @@ public class SalvoController {
     }
 
 	@CrossOrigin(origins = "*")
-	@RequestMapping("/games")
-	 public Map<String, Object> getGames() {
+	@RequestMapping(value = "/games", method = RequestMethod.GET)
+//	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+	 public Map<String, Object> getAllGames() {
         Map<String, Object> dto = new LinkedHashMap<>();
-        dto.put("games", gameRepository.findAll()
-        		.stream()
-        		.map(Game::gameDTO)
-        		.collect(Collectors.toList()));
+        dto.put("games", gameRepository.findAll().stream().map(Game::gameDTO).collect(Collectors.toList()));
+        
         return dto;
 	}
 	
@@ -80,6 +83,18 @@ public class SalvoController {
 	}
 	
 	@CrossOrigin(origins = "*")
+	@RequestMapping("/playerInfo")
+	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+	public Map<String, Object> getPlayerSelfInfo() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        
+		Player player = playerRepository.findByNickName(authentication.getName());
+		Map<String, Object> response = player.playerDTO();
+
+		return response;
+	}
+	
+	@CrossOrigin(origins = "*")
 	@RequestMapping("/player/{nickName}")
 	public Map<String,Object> getPlayerByNickname(@PathVariable String nickName) {
 		Player player = playerRepository.findByNickName(nickName);
@@ -87,7 +102,6 @@ public class SalvoController {
 		response.put("data", player.playerDTO());
 		
 		return response;
-		
 	}
 	
 	@CrossOrigin(origins = "*")
