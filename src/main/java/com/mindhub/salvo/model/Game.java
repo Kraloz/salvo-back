@@ -77,7 +77,7 @@ public class Game {
         scores.add(score);
     }
     
-    private boolean isFull() {
+    public boolean isFull() {
     	if(this.getGamePlayers().size()<2) 
     		return false;
     	else
