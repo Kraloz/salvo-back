@@ -9,32 +9,32 @@ import javax.persistence.Id;
 
 @Entity
 public class Role {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
 
-	@Enumerated(EnumType.STRING)
-	private RoleType name;
+    @Enumerated(EnumType.STRING)
+    private RoleType name;
 
-	public Role() {}
+    public Role() {}
 
-	public Role(RoleType name) {
-		this.name = name;
-	}
+    public Role(RoleType name) {
+        this.name = name;
+    }
 
-	public Integer getId() {
-		return id;
-	}
+    public Integer getId() {
+        return id;
+    }
 
-	public void setId(Integer id) {
-		this.id = id;
-	}
+    public void setId(Integer id) {
+        this.id = id;
+    }
 
-	public RoleType getName() {
-		return name;
-	}
+    public RoleType getName() {
+        return name;
+    }
 
-	public void setName(RoleType name) {
-		this.name = name;
-	}
+    public void setName(RoleType name) {
+        this.name = name;
+    }
 }

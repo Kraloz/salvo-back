@@ -22,7 +22,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 		Player user = playerRepository.findByNickName(username);
 //				usar esto cuando findByNickname devuelva Optional
 //				.orElseThrow(() -> new UsernameNotFoundException("User Not Found with username: " + username));
-
 		return UserDetailsImpl.build(user);
 	}
 
