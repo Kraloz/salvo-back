@@ -87,13 +87,7 @@ public class SalvoApplication {
 			Ship ship3 = shipRepository.save(new Ship(gp1, ShipType.CARRIER, List.of("C1","C2","C3","C4","C5")));
 			Ship ship4 = shipRepository.save(new Ship(gp1, ShipType.SUBMARINE, List.of("D1","D2","D3")));
 			Ship ship5 = shipRepository.save(new Ship(gp1, ShipType.PATROL_BOAT, List.of("E1","E2")));
-			
-			Ship ship6 = shipRepository.save(new Ship(gp2, ShipType.BATTLESHIP, List.of("I1","I2","I3","I4")));
-			Ship ship7 = shipRepository.save(new Ship(gp2, ShipType.SUBMARINE, List.of("J1","J2","J3")));
-			
-			Ship ship8 = shipRepository.save(new Ship(gp3, ShipType.BATTLESHIP, List.of("I1","I2","I3","I4")));
-			Ship ship9 = shipRepository.save(new Ship(gp3, ShipType.SUBMARINE, List.of("J1","J2","J3")));
-			
+
 			Salvo salvo1 = salvoRepository.save(new Salvo(gp1, List.of("A1","E3","A4")));
 			Salvo salvo2 = salvoRepository.save(new Salvo(gp2, List.of("F4","C2","G7")));
 			Salvo salvo3 = salvoRepository.save(new Salvo(gp3, List.of("A1","E3","A4")));
@@ -102,13 +96,6 @@ public class SalvoApplication {
 			// Scores
 			Score score1 = scoreRepository.save(new Score(player1, game1, 1, LocalDateTime.now()));
 			Score score2 = scoreRepository.save(new Score(player2, game1, 0, LocalDateTime.now()));
-			
-			// ESTO SI FUNCIONA
-//          userRoles.add(user);
-//			Player p = new Player("pito@xd.com", "pito", encoder.encode("pito123"));
-//			p.setRoles(userRoles);			
-//			playerRepository.save(p);
-
 		};
 	}
 }

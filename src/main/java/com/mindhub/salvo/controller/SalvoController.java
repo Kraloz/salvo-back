@@ -5,16 +5,19 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,9 +25,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mindhub.salvo.model.Game;
 import com.mindhub.salvo.model.GamePlayer;
 import com.mindhub.salvo.model.Player;
+import com.mindhub.salvo.model.Ship;
 import com.mindhub.salvo.repository.GamePlayerRepository;
 import com.mindhub.salvo.repository.GameRepository;
 import com.mindhub.salvo.repository.PlayerRepository;
+import com.mindhub.salvo.repository.ShipRepository;
 
 @RestController
 @RequestMapping("/api")
@@ -37,6 +42,8 @@ public class SalvoController {
 	PlayerRepository playerRepository;
 	@Autowired
 	GamePlayerRepository gamePlayerRepository;
+	@Autowired
+	ShipRepository shipRepository;
 	
 	/* routes definitions */
 	
@@ -133,10 +140,54 @@ public class SalvoController {
 		if(!gpReponse.isPresent()) {
 			dto.put("error", "Player didn't join the game");
 			return new ResponseEntity<>(dto, HttpStatus.NOT_FOUND);
-		}  
+		}
 		
 		return new ResponseEntity<>(gpReponse.get().gamePlayerDTO(), HttpStatus.OK);
 	}
+	
+	@RequestMapping(value = "/games/{gameId}/ships",
+					method = RequestMethod.POST,
+					consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+	public ResponseEntity<?> setShipsGameView(
+			@PathVariable("gameId") Long gameId,
+			@RequestBody Set<Ship> ships) {
+		
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Map<String, Object> dto = new LinkedHashMap<String, Object>(); 
+		
+		Player player = playerRepository.findByNickName(authentication.getName());
+		if(player==null) {
+			return ResponseEntity.badRequest().build();
+		}
+		
+		Optional<GamePlayer> gp = gamePlayerRepository.findByGameIdAndPlayerId(gameId, player.getId());
+		// Checks if the gamePlayer exist
+		if(!gp.isPresent()) {
+			dto.put("error", "Game doesn't exist");
+            return new ResponseEntity<>(dto, HttpStatus.NOT_FOUND);
+		}
+		if(!gp.get().getShips().isEmpty()) {
+			dto.put("error", "Ships Already deployed");
+            return new ResponseEntity<>(dto, HttpStatus.CONFLICT);
+		}
+		// Checks if there are only 5 ships to deploy
+		if (ships.size() != 5) {
+			dto.put("error", "You can only deploy 5 ships!");
+			return new ResponseEntity<>(dto, HttpStatus.BAD_REQUEST);
+		}
+		
+		ships.forEach(ship -> {
+			shipRepository.save(ship);
+			gp.get().addShip(ship);
+		});
+		gamePlayerRepository.save(gp.get());
+		
+		//System.out.println(gp.get());
+		URI location = URI.create(String.format("/api/games/%d/ships", gameId));
+		return ResponseEntity.created(location).build();
+	}
+	
 	
 	// @return Info of the authenticated player
 	@CrossOrigin(origins = "*")
@@ -163,56 +214,8 @@ public class SalvoController {
 		
 		return response;
 	}
+	
+    private GamePlayer enemyGamePlayer(GamePlayer gamePlayer) {
+        return gamePlayer.getGame().getGamePlayers().stream().filter(e -> e.getId() != gamePlayer.getId()).findFirst().orElse(null);
+    }
 }
-
-//@CrossOrigin(origins = "*")
-//@RequestMapping("/game_view/{gamePlayerId}")
-//public ResponseEntity<Map<String, Object>> getViewsByPlayerId(@PathVariable Long gamePlayerId) {
-//	Optional<GamePlayer> gamePlayer = gamePlayerRepository.findById(gamePlayerId);
-//	
-//    return new ResponseEntity<>(gamePlayer.get().gamePlayerDTO(), HttpStatus.OK);
-//}
-//@CrossOrigin(origins = "*")
-//@RequestMapping("/player/{nickName}/game_views")
-//public Set<Map<String,Object>> getPlayerGamePlayers(@PathVariable String nickName) {
-//	Player player = playerRepository.findByNickName(nickName);
-//	
-//	Set<GamePlayer> gamePlayers =  player.getGamePlayers();
-//	Set<Map<String,Object>> response = gamePlayers.stream()
-//			.map(GamePlayer::gamePlayerDTO)
-//			.collect(Collectors.toSet());
-//
-//	return response;
-//}
-//@CrossOrigin(origins = "*")
-//@RequestMapping("/player/{nickName}")
-//public Map<String,Object> getPlayerByNickname(@PathVariable String nickName) {
-//	Player player = playerRepository.findByNickName(nickName);
-//	Map<String, Object> response = new HashMap<String, Object>();
-//	response.put("data", player.playerDTO());
-//	
-//	return response;
-//}
-//@CrossOrigin(origins = "*")
-//@RequestMapping("/players")
-//public List<Map<String, Object>> getPlayers() {
-//	List<Player> players = playerRepository.findAll();
-//	List<Map<String, Object>> response =
-//			players.stream()
-//			.map(Player::playerDTO)
-//			.collect(Collectors.toList());
-//	
-//	return response;
-//}
-//@CrossOrigin(origins = "*")
-//@RequestMapping("/game_view")
-//@PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
-//public List<Map<String, Object>> getGameViews() {
-//	List<GamePlayer> gamePlayers = gamePlayerRepository.findAll();
-//	List<Map<String, Object>> response =
-//			gamePlayers.stream()
-//			.map(GamePlayer::gamePlayerDTO)
-//			.collect(Collectors.toList());
-//		
-//	return response;
-//}
