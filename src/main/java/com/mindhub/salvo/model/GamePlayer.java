@@ -111,6 +111,10 @@ public class GamePlayer {
 		return this.player.getGameScore(this.game);
     }
 	
+    public int getActualTurn() {
+    	return this.salvoes.size();
+    }    
+    
 	// DTOs
     public Map<String, Object> gamePlayerDTO() {
         Map<String, Object> dto = new LinkedHashMap<>();

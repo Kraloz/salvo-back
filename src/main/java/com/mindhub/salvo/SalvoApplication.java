@@ -77,9 +77,8 @@ public class SalvoApplication {
 			
 			// GamePlayers
 			GamePlayer gp1 = gamePlayerRepository.save(new GamePlayer(game1, player1));
-			GamePlayer gp2 = gamePlayerRepository.save(new GamePlayer(game1, player2));
-			GamePlayer gp3 = gamePlayerRepository.save(new GamePlayer(game2, player1));
-			GamePlayer gp4 = gamePlayerRepository.save(new GamePlayer(game3, admin_acc));
+			GamePlayer gp2 = gamePlayerRepository.save(new GamePlayer(game1, admin_acc));
+			
 			
 			// Ships
 			Ship ship1 = shipRepository.save(new Ship(gp1, ShipType.BATTLESHIP, List.of("A1","A2","A3","A4")));
@@ -87,11 +86,17 @@ public class SalvoApplication {
 			Ship ship3 = shipRepository.save(new Ship(gp1, ShipType.CARRIER, List.of("C1","C2","C3","C4","C5")));
 			Ship ship4 = shipRepository.save(new Ship(gp1, ShipType.SUBMARINE, List.of("D1","D2","D3")));
 			Ship ship5 = shipRepository.save(new Ship(gp1, ShipType.PATROL_BOAT, List.of("E1","E2")));
+			
+			Ship ship6 = shipRepository.save(new Ship(gp2, ShipType.BATTLESHIP, List.of("A1","A2","A3","A4")));
+			Ship ship7 = shipRepository.save(new Ship(gp2, ShipType.DESTROYER, List.of("B1","B2","B3")));
+			Ship ship8 = shipRepository.save(new Ship(gp2, ShipType.CARRIER, List.of("C1","C2","C3","C4","C5")));
+			Ship ship9 = shipRepository.save(new Ship(gp2, ShipType.SUBMARINE, List.of("D1","D2","D3")));
+			Ship ship0 = shipRepository.save(new Ship(gp2, ShipType.PATROL_BOAT, List.of("E1","E2")));
 
-			Salvo salvo1 = salvoRepository.save(new Salvo(gp1, List.of("A1","E3","A4")));
-			Salvo salvo2 = salvoRepository.save(new Salvo(gp2, List.of("F4","C2","G7")));
-			Salvo salvo3 = salvoRepository.save(new Salvo(gp3, List.of("A1","E3","A4")));
-			Salvo salvo4 = salvoRepository.save(new Salvo(gp3, List.of("F4","C2","G7")));
+//			Salvo salvo1 = salvoRepository.save(new Salvo(gp1, Set.of("A1","E3","A4")));
+//			Salvo salvo2 = salvoRepository.save(new Salvo(gp2, Set.of("F4","C2","G7")));
+//			Salvo salvo3 = salvoRepository.save(new Salvo(gp3, Set.of("A1","E3","A4")));
+//			Salvo salvo4 = salvoRepository.save(new Salvo(gp3, Set.of("F4","C2","G7")));
 			
 			// Scores
 			Score score1 = scoreRepository.save(new Score(player1, game1, 1, LocalDateTime.now()));

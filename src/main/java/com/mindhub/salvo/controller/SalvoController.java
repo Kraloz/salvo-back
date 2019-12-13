@@ -1,6 +1,7 @@
 package com.mindhub.salvo.controller;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,17 +26,19 @@ import org.springframework.web.bind.annotation.RestController;
 import com.mindhub.salvo.model.Game;
 import com.mindhub.salvo.model.GamePlayer;
 import com.mindhub.salvo.model.Player;
+import com.mindhub.salvo.model.Salvo;
 import com.mindhub.salvo.model.Ship;
 import com.mindhub.salvo.repository.GamePlayerRepository;
 import com.mindhub.salvo.repository.GameRepository;
 import com.mindhub.salvo.repository.PlayerRepository;
+import com.mindhub.salvo.repository.SalvoRepository;
 import com.mindhub.salvo.repository.ShipRepository;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(origins = "*")
 public class SalvoController {
-	
+
 	@Autowired
 	GameRepository gameRepository;
 	@Autowired
@@ -44,9 +47,11 @@ public class SalvoController {
 	GamePlayerRepository gamePlayerRepository;
 	@Autowired
 	ShipRepository shipRepository;
-	
+	@Autowired
+	SalvoRepository salvoRepository;
+
 	/* routes definitions */
-	
+
 	// List all games
 	@RequestMapping(value = "/games", method = RequestMethod.GET)
 	public Map<String, Object> getAllGames() {
@@ -61,25 +66,27 @@ public class SalvoController {
 	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
 	public ResponseEntity<?> createGame() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		Player player = playerRepository.findByNickName(authentication.getName());
-		if(player==null) {
+		Optional<Player> player = playerRepository.findByNickName(authentication.getName());
+		
+		if (!player.isPresent()) {
 			return ResponseEntity.badRequest().build();
 		}
 		
 		Game game = gameRepository.save(new Game());
-		GamePlayer gp = gamePlayerRepository.save(new GamePlayer(game, player));
+		GamePlayer gp = gamePlayerRepository.save(new GamePlayer(game, player.get()));
 
 	    URI location = URI.create(String.format("/api/game_view/%d", gp.getId()));
 		return ResponseEntity.created(location).build();
 	}
-	
+
 	// Allows a player to Join a game creating the relationship between them
 	@RequestMapping(value = "/games/{gameId}", method = RequestMethod.POST)
 	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
 	public ResponseEntity<?> enrollGame(@PathVariable("gameId") Long gameId) {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		Player player = playerRepository.findByNickName(authentication.getName());
-		if(player==null) {
+		Optional<Player> player = playerRepository.findByNickName(authentication.getName());
+		
+		if (!player.isPresent()) {
 			return ResponseEntity.badRequest().build();
 		}
 		
@@ -88,7 +95,7 @@ public class SalvoController {
 		Optional<Game> game = gameRepository.findById(gameId);
 
 		// Checks if the game exist
-		if(!game.isPresent()) {
+		if (!game.isPresent()) {
 			dto.put("error", "Game doesn't exist");
             return new ResponseEntity<>(dto, HttpStatus.NOT_FOUND); 
 		}
@@ -97,18 +104,18 @@ public class SalvoController {
 		Game gameAux = game.get();
 		
 		// Check if the player is already inside the game
-        if (gameAux.getGamePlayers().stream().anyMatch(e -> e.getPlayer().getId() == player.getId())) {
+        if (gameAux.getGamePlayers().stream().anyMatch(e -> e.getPlayer().getId() == player.get().getId())) {
             dto.put("error", "Player already joined the game");
             return new ResponseEntity<>(dto, HttpStatus.CONFLICT);
         }
 		
 		// Check if the game is full
-		if(gameAux.isFull()) {
+		if (gameAux.isFull()) {
 			dto.put("error", "Game is full");
             return new ResponseEntity<>(dto, HttpStatus.CONFLICT);
 		}
 	
-        GamePlayer gp = new GamePlayer(game.get(), player);
+        GamePlayer gp = new GamePlayer(game.get(), player.get());
         gamePlayerRepository.save(gp);
         
 	    URI location = URI.create(String.format("/rest/game_view/%d", (int)gp.getId()));
@@ -130,11 +137,15 @@ public class SalvoController {
 		
 		Game gameAux = game.get();
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		Player player = playerRepository.findByNickName(authentication.getName());
+		Optional<Player> player = playerRepository.findByNickName(authentication.getName());
+		
+		if (!player.isPresent()) {
+			return ResponseEntity.badRequest().build();
+		};
 
 		Optional<GamePlayer> gpReponse = gameAux.getGamePlayers()
 				.stream()
-				.filter(gp -> gp.getPlayer().getId() == player.getId())
+				.filter(gp -> gp.getPlayer().getId() == player.get().getId())
 				.findFirst();
 		
 		if(!gpReponse.isPresent()) {
@@ -144,30 +155,32 @@ public class SalvoController {
 		
 		return new ResponseEntity<>(gpReponse.get().gamePlayerDTO(), HttpStatus.OK);
 	}
-	
+
 	@RequestMapping(value = "/games/{gameId}/ships",
 					method = RequestMethod.POST,
 					consumes = MediaType.APPLICATION_JSON_VALUE)
 	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-	public ResponseEntity<?> setShipsGameView(
+	public ResponseEntity<?> deployShips(
 			@PathVariable("gameId") Long gameId,
 			@RequestBody Set<Ship> ships) {
 		
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		Map<String, Object> dto = new LinkedHashMap<String, Object>(); 
 		
-		Player player = playerRepository.findByNickName(authentication.getName());
-		if(player==null) {
-			return ResponseEntity.badRequest().build();
-		}
+		Optional<Player> player = playerRepository.findByNickName(authentication.getName());
 		
-		Optional<GamePlayer> gp = gamePlayerRepository.findByGameIdAndPlayerId(gameId, player.getId());
+		if (!player.isPresent()) {
+			return ResponseEntity.badRequest().build();
+		};
+		
+		
+		Optional<GamePlayer> gp = gamePlayerRepository.findByGameIdAndPlayerId(gameId, player.get().getId());
 		// Checks if the gamePlayer exist
-		if(!gp.isPresent()) {
+		if (!gp.isPresent()) {
 			dto.put("error", "Game doesn't exist");
             return new ResponseEntity<>(dto, HttpStatus.NOT_FOUND);
 		}
-		if(!gp.get().getShips().isEmpty()) {
+		if (!gp.get().getShips().isEmpty()) {
 			dto.put("error", "Ships Already deployed");
             return new ResponseEntity<>(dto, HttpStatus.CONFLICT);
 		}
@@ -187,21 +200,88 @@ public class SalvoController {
 		URI location = URI.create(String.format("/api/games/%d/ships", gameId));
 		return ResponseEntity.created(location).build();
 	}
-	
-	
+
+	@RequestMapping(value = "/games/{gameId}/salvoes",
+					method = RequestMethod.POST,
+					consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+	public ResponseEntity<?> fireSalvoes(
+			@PathVariable("gameId") Long gameId,
+			@RequestBody Set<String> shots) {
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Map<String, Object> dto = new LinkedHashMap<String, Object>();
+
+		// Checks if game exist
+		Optional<Game> game = gameRepository.findById(gameId);
+		if (!game.isPresent()) {
+			dto.put("error", "The game doesn't exist");
+            return new ResponseEntity<>(dto, HttpStatus.NOT_FOUND);
+		}
+
+		// Checks if the player exist
+		Optional<Player> player = playerRepository.findByNickName(authentication.getName());
+		if (!player.isPresent()) {
+			return new ResponseEntity<>("Player doesn't exist" ,HttpStatus.NOT_FOUND);
+		};
+
+		
+		// Checks if the player belongs to the game requested
+		Optional<GamePlayer> optGp = gamePlayerRepository.findByGameIdAndPlayerId(gameId, player.get().getId());		
+		if (!optGp.isPresent()) {
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+		}
+		
+		// Checks if the game is full
+		if (game.get().getGamePlayers().size() != 2) {
+			dto.put("error", "There is no enemy player");
+            return new ResponseEntity<>(dto, HttpStatus.CONFLICT);
+		}
+
+		// checks if all ships has been deployed
+		GamePlayer playerGp = optGp.get();
+		GamePlayer enemyGp = enemyGamePlayer(playerGp);
+		
+		if (!(playerGp.getShips().size() == 5 && enemyGp.getShips().size() == 5)) {
+			dto.put("error", "Ships hasn't been deployed");
+            return new ResponseEntity<>(dto, HttpStatus.CONFLICT);
+		}
+		
+		// Saves the salvo
+        Salvo salvo = new Salvo(playerGp, shots);
+        playerGp.addSalvo(salvo);
+        
+        salvoRepository.save(salvo);
+        gamePlayerRepository.save(playerGp);
+		
+        /*
+		// Checks if the firing player is in the same turn or one turn behind enemy 
+		int playerTurn = playerGp.getActualTurn();
+		int enemyTurn = playerGp.getActualTurn();
+         */
+
+        return ResponseEntity.accepted().build();
+	}
+
 	// @return Info of the authenticated player
 	@CrossOrigin(origins = "*")
 	@RequestMapping("/playerInfo")
 	@PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-	public Map<String, Object> getPlayerSelfInfo() {
+	public ResponseEntity<?> getPlayerSelfInfo() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		Player player = playerRepository.findByNickName(authentication.getName());
 		
-		Map<String, Object> response = player.playerDTO();
+		
+		Optional<Player> player = playerRepository.findByNickName(authentication.getName());
+		
+		if (!player.isPresent()) {
+			return ResponseEntity.badRequest().build();
+		};
+		
+		Map<String, Object> response = player.get().playerDTO();
 
-		return response;
+		return ResponseEntity.ok(response);
 	}
-	
+
 	// @returns *unordered* leaderboard
 	@CrossOrigin(origins = "*")
 	@RequestMapping("/leaderboard")
@@ -214,7 +294,7 @@ public class SalvoController {
 		
 		return response;
 	}
-	
+
     private GamePlayer enemyGamePlayer(GamePlayer gamePlayer) {
         return gamePlayer.getGame().getGamePlayers().stream().filter(e -> e.getId() != gamePlayer.getId()).findFirst().orElse(null);
     }
