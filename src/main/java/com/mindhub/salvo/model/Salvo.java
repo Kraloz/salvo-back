@@ -1,11 +1,13 @@
 package com.mindhub.salvo.model;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -50,9 +52,9 @@ public class Salvo {
         this.shots = shots;
     }
 
-    public Salvo (int turn, Set<String> shots) {
+    public Salvo (Set<String> shots, int turn) {
+    	this.shots = shots;
         this.turn = turn;
-        this.shots = shots;
     }
 
     
@@ -91,12 +93,48 @@ public class Salvo {
     }
 
     // behavior
-    public Map<String, Object> salvoesDTO (){
+    public Map<String, Object> salvoesDTO () {
         Map<String, Object> dto = new LinkedHashMap<>();
         dto.put("turn", this.getTurn());
         dto.put("player", this.getGamePlayer().getPlayer().getId());
-        dto.put("locations", this.getShots());        
+        dto.put("locations", this.getShots());    
+        dto.put("hits", this.getHits());
+        dto.put("sinks", this.getSinks());
         
         return dto;
     }
+
+    
+    private Optional<GamePlayer> getOpponentGamePlayer() {
+        return this.getGamePlayer().getGame().getGamePlayers().stream().filter(gp -> gp.getId() != this.gamePlayer.getId()).findFirst();
+    }
+
+    private List<String> getHits () {
+        return shots.stream()
+                .filter(shot -> getOpponentGamePlayer().get().getShips().stream().anyMatch(ship -> ship.getCells().contains(shot)))
+                .collect(Collectors.toList());
+    }
+
+    private List<Map<String, Object>> getSinks() {
+        List<String> allShots = new ArrayList<>();
+         this.gamePlayer.getSalvoes().stream()
+                 .filter(salvo -> salvo.getTurn() <= this.getTurn())
+                 .forEach(salvo -> allShots.addAll(salvo.getShots()));
+         List<Map<String, Object>> allSinks = new ArrayList<>();
+
+         if (getOpponentGamePlayer().isPresent()) {
+             allSinks = getOpponentGamePlayer().get().getShips().stream()
+                     .filter(ship -> allShots.containsAll(ship.getCells()))
+                     .map(Ship::shipDTO)
+                     .collect(Collectors.toList());
+         }
+         
+//	     Collections.sort(allSinks, (sink1, sink2) -> {
+//	    	 Integer turn1 = (Integer) sink1.get("turn");
+//	    	 Integer turn2 = (Integer) sink2.get("turn2");
+//	    	    return turn1.compareTo(turn2);
+//	    	});
+         
+         return allSinks;
+    }    
 }

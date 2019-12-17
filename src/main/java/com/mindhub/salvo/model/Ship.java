@@ -1,9 +1,9 @@
 package com.mindhub.salvo.model;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
@@ -39,7 +39,7 @@ public class Ship {
 	
 	@ElementCollection
 	@Column(name="shipLocation")
-	private List<String> cells = new ArrayList<>();
+	private Set<String> cells = new HashSet<String>();
 
 	private ShipType type;
 	
@@ -50,12 +50,12 @@ public class Ship {
 		this.gamePlayer = gamePlayer;
 	}
 	
-	public Ship(ShipType type, List<String> cells) {
+	public Ship(ShipType type, Set<String> cells) {
 		this.type = type;
 		this.cells = cells;
 	}
 	
-	public Ship(GamePlayer gamePlayer, ShipType type , List<String> cells) {
+	public Ship(GamePlayer gamePlayer, ShipType type , Set<String> cells) {
 		this.gamePlayer = gamePlayer;
 		this.type = type;
 		this.cells = cells;
@@ -74,11 +74,11 @@ public class Ship {
 		this.gamePlayer = gamePlayer;
 	}
 
-	public List<String> getCells() {
+	public Set<String> getCells() {
 		return cells;
 	}
 
-	public void setCells(List<String> cells) {
+	public void setCells(Set<String> cells) {
 		this.cells = cells;
 	}
 	

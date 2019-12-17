@@ -14,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import com.mindhub.salvo.security.jwt.AuthEntryPointJwt;
 import com.mindhub.salvo.security.jwt.AuthTokenFilter;
@@ -62,11 +63,25 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 			.antMatchers("/console/").permitAll()
 			.antMatchers("/console/**").permitAll()
 			.antMatchers("/api/**").permitAll()
+			.antMatchers("/web**").permitAll()
 			.antMatchers("/web/**").permitAll()
-			.anyRequest().authenticated();
+			.antMatchers("/static/**").permitAll()
+			.antMatchers("/static**").permitAll()
+			.antMatchers("/static/SPA/**").permitAll()
+			.antMatchers("/**").permitAll();
+			
+//			.anyRequest().authenticated();
 
 	    http.headers().frameOptions().sameOrigin();
 	    
 		http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 	}
 }
+
+//@Configuration
+//@EnableWebMvc
+//public class MvcConfig implements WebMvcConfigurer {
+//	@Override public void addResourceHandlers(ResourceHandlerRegistry registry) {
+//		registry .addResourceHandler("/resources/**") .addResourceLocations("/resources/"); 
+//	}
+//}

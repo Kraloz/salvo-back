@@ -17,6 +17,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 @Entity
 public class GamePlayer {
@@ -72,6 +74,7 @@ public class GamePlayer {
 	public void setPlayer(Player player) {
 		this.player = player;
 	}
+
 	
 	public LocalDateTime getCreated() {
 		return this.created;
@@ -103,7 +106,7 @@ public class GamePlayer {
         this.salvoes.add(salvo);
     }
 
-    public void addSalvoes(Set<Salvo> salvoes){
+    public void addSalvoes(Set<Salvo> salvoes) {
         salvoes.stream().forEach(salvo -> this.addSalvo(salvo));
     }
     
@@ -112,26 +115,25 @@ public class GamePlayer {
     }
 	
     public int getActualTurn() {
-    	return this.salvoes.size();
-    }    
+    	return this.salvoes.size()+1;
+    }
+    
+    public boolean areShipsDeployed() {
+    	return this.getShips().size() == 0 ? false : true;
+    }
     
 	// DTOs
     public Map<String, Object> gamePlayerDTO() {
         Map<String, Object> dto = new LinkedHashMap<>();
         dto.put("id", this.game.getId());
         dto.put("created", this.game.getCreated());
-        dto.put("gamePlayers" , this.game.getGamePlayers()
-				.stream()
-				.map(GamePlayer::gamesPlayersDTO));
-        dto.put("ships", this.getShips()
-        		.stream()
-        		.map(Ship::shipDTO));
-        dto.put("salvoes", this.game.getGamePlayers()
-    			.stream()
-    			.flatMap(gamePlayer -> gamePlayer.getSalvoes()
-    					.stream()
-    					.map(Salvo::salvoesDTO)));
-     
+        dto.put("gamePlayers" , this.game.getGamePlayers().stream().map(GamePlayer::gamesPlayersDTO));
+        
+        dto.put("ships", this.getShips().stream().map(Ship::shipDTO));
+        dto.put("salvoes", this.game.getGamePlayers().stream().flatMap(gamePlayer -> gamePlayer.getSalvoes().stream().map(Salvo::salvoesDTO)));        
+        
+        dto.put("status", this.game.getStatus());
+        
         // seguramente esto esté mal o sobre
         if (this.getScore() != null)
             dto.put("score", this.getScore().getScore());
@@ -144,6 +146,8 @@ public class GamePlayer {
         Map<String, Object> dto = new LinkedHashMap<>();
         dto.put("id", this.getId());
         dto.put("player", this.player.playerDTO());
+        dto.put("turn", this.getActualTurn());
+        
         Score score = this.player.getGameScore(this.game);
         if (score != null)
             dto.put("score", score.getScore());

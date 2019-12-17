@@ -24,6 +24,8 @@ public class Game {
 	@GenericGenerator(name = "native", strategy = "native")
 	private long id;
 	
+	private GameStatus status;
+	
     private LocalDateTime created;
 
     @OneToMany(mappedBy="game", fetch=FetchType.EAGER,cascade = CascadeType.ALL)
@@ -35,11 +37,24 @@ public class Game {
     // constructors
     public Game() {
     	this.created = LocalDateTime.now();
+    	this.status = GameStatus.CREATED;
+    }
+    
+    public Game(GameStatus status) {
+    	this.status = status;
     }
     
     // getters & setters
     public long getId() {
 		return this.id;
+	}
+    
+	public GameStatus getStatus() {
+		return this.status;
+	}
+
+	public void setStatus(GameStatus status) {
+		this.status = status;
 	}
     
     public LocalDateTime getCreated() {
@@ -92,6 +107,7 @@ public class Game {
 	  dto.put("gamePlayers", this.getGamePlayers()
 			  .stream()
 			  .map(GamePlayer::gamesPlayersDTO));
+	  dto.put("status", this.getStatus());
 	  dto.put("full", this.isFull());
 	  
 	  return dto;
